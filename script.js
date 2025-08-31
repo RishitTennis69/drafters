@@ -107,7 +107,6 @@ class DraftBoard {
         infoDiv.className = 'cursor-pointer group';
         infoDiv.innerHTML = `
             <div class="font-medium text-sm">${player.name}</div>
-            <div class="text-xs text-gray-600">${player.position} - ${player.nflTeam}</div>
             <div class="text-xs text-gray-500">Pick ${player.draftPick}</div>
             <button class="text-red-500 text-xs opacity-0 group-hover:opacity-100 transition-opacity duration-200" 
                     onclick="draftBoard.removePlayer(${player.draftPick})">Remove</button>
@@ -146,8 +145,8 @@ class DraftBoard {
     // Add a player to the draft board
     addPlayer(playerData) {
         // Validate required fields
-        if (!playerData.name || !playerData.position || !playerData.nflTeam) {
-            alert('Please fill in all required fields');
+        if (!playerData.name) {
+            alert('Please enter a player name');
             return false;
         }
 
@@ -168,7 +167,7 @@ class DraftBoard {
 
         // Add player to the list
         const player = {
-            ...playerData,
+            name: playerData.name,
             draftPick: nextPickNumber,
             timestamp: new Date().toISOString()
         };
@@ -248,16 +247,14 @@ class DraftBoard {
         }
 
         const results = this.players.filter(player => 
-            player.name.toLowerCase().includes(query.toLowerCase()) ||
-            player.position.toLowerCase().includes(query.toLowerCase()) ||
-            player.nflTeam.toLowerCase().includes(query.toLowerCase())
+            player.name.toLowerCase().includes(query.toLowerCase())
         );
 
         if (results.length === 0) {
             document.getElementById('searchResults').textContent = 'No players found';
         } else {
             const resultText = results.map(player => 
-                `${player.name} (${player.position} - ${player.nflTeam}) - Pick ${player.draftPick}`
+                `${player.name} - Pick ${player.draftPick}`
             ).join(', ');
             document.getElementById('searchResults').textContent = `Found: ${resultText}`;
         }
@@ -266,8 +263,6 @@ class DraftBoard {
     // Clear the form
     clearForm() {
         document.getElementById('playerName').value = '';
-        document.getElementById('playerPosition').value = '';
-        document.getElementById('playerNFLTeam').value = '';
     }
 
     // Remove cell highlight
@@ -313,9 +308,7 @@ class DraftBoard {
         // Add player button
         document.getElementById('addPlayerBtn').addEventListener('click', () => {
             const playerData = {
-                name: document.getElementById('playerName').value.trim(),
-                position: document.getElementById('playerPosition').value,
-                nflTeam: document.getElementById('playerNFLTeam').value.trim()
+                name: document.getElementById('playerName').value.trim()
             };
             
             this.addPlayer(playerData);
@@ -328,18 +321,6 @@ class DraftBoard {
 
         // Enter key support for form
         document.getElementById('playerName').addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') {
-                document.getElementById('addPlayerBtn').click();
-            }
-        });
-
-        document.getElementById('playerPosition').addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') {
-                document.getElementById('addPlayerBtn').click();
-            }
-        });
-
-        document.getElementById('playerNFLTeam').addEventListener('keypress', (e) => {
             if (e.key === 'Enter') {
                 document.getElementById('addPlayerBtn').click();
             }
@@ -364,11 +345,11 @@ document.addEventListener('DOMContentLoaded', () => {
 // Add some sample data for demonstration (remove in production)
 function addSampleData() {
     const samplePlayers = [
-        { name: 'Christian McCaffrey', position: 'RB', nflTeam: 'SF' },
-        { name: 'Tyreek Hill', position: 'WR', nflTeam: 'MIA' },
-        { name: 'Austin Ekeler', position: 'RB', nflTeam: 'WAS' },
-        { name: 'Stefon Diggs', position: 'WR', nflTeam: 'HOU' },
-        { name: 'Saquon Barkley', position: 'RB', nflTeam: 'PHI' }
+        { name: 'Christian McCaffrey' },
+        { name: 'Tyreek Hill' },
+        { name: 'Austin Ekeler' },
+        { name: 'Stefon Diggs' },
+        { name: 'Saquon Barkley' }
     ];
     
     samplePlayers.forEach(player => {
