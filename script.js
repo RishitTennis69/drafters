@@ -28,7 +28,7 @@ class DraftBoard {
             
             // Round number
             const roundCell = document.createElement('td');
-            roundCell.className = 'px-4 py-3 text-sm font-medium text-gray-700 bg-gray-50';
+            roundCell.className = 'px-4 py-3 text-sm font-medium text-gray-700 bg-gray-50 border-r border-gray-300';
             roundCell.textContent = `Round ${round}`;
             row.appendChild(roundCell);
 
@@ -119,9 +119,6 @@ class DraftBoard {
 
     // Prompt user to add a player
     promptForPlayer(pickNumber, round, team) {
-        // Auto-fill the form
-        document.getElementById('draftPick').value = pickNumber;
-        
         // Focus on player name
         document.getElementById('playerName').focus();
         
@@ -149,22 +146,8 @@ class DraftBoard {
     // Add a player to the draft board
     addPlayer(playerData) {
         // Validate required fields
-        if (!playerData.name || !playerData.position || !playerData.nflTeam || !playerData.draftPick) {
+        if (!playerData.name || !playerData.position || !playerData.nflTeam) {
             alert('Please fill in all required fields');
-            return false;
-        }
-
-        const draftPick = parseInt(playerData.draftPick);
-        
-        // Check if pick number is valid
-        if (draftPick < 1 || draftPick > this.totalPicks) {
-            alert(`Pick number must be between 1 and ${this.totalPicks}`);
-            return false;
-        }
-
-        // Check if pick is already taken
-        if (this.players.find(p => p.draftPick === draftPick)) {
-            alert(`Pick ${draftPick} is already taken`);
             return false;
         }
 
@@ -174,10 +157,19 @@ class DraftBoard {
             return false;
         }
 
+        // Calculate the next draft pick number automatically
+        const nextPickNumber = this.players.length + 1;
+        
+        // Check if we've exceeded the total picks
+        if (nextPickNumber > this.totalPicks) {
+            alert('Draft is complete! All 180 picks have been used.');
+            return false;
+        }
+
         // Add player to the list
         const player = {
             ...playerData,
-            draftPick: draftPick,
+            draftPick: nextPickNumber,
             timestamp: new Date().toISOString()
         };
         
@@ -205,6 +197,12 @@ class DraftBoard {
     removePlayer(draftPick) {
         if (confirm('Are you sure you want to remove this player?')) {
             this.players = this.players.filter(p => p.draftPick !== draftPick);
+            
+            // Reorder remaining players to maintain sequential pick numbers
+            this.players.forEach((player, index) => {
+                player.draftPick = index + 1;
+            });
+            
             this.updateDraftBoard();
             this.updateSummary();
             this.saveToStorage();
@@ -270,7 +268,6 @@ class DraftBoard {
         document.getElementById('playerName').value = '';
         document.getElementById('playerPosition').value = '';
         document.getElementById('playerNFLTeam').value = '';
-        document.getElementById('draftPick').value = '';
     }
 
     // Remove cell highlight
@@ -296,6 +293,12 @@ class DraftBoard {
                 const data = JSON.parse(saved);
                 if (data.players && Array.isArray(data.players)) {
                     this.players = data.players;
+                    
+                    // Reorder players to maintain sequential pick numbers
+                    this.players.forEach((player, index) => {
+                        player.draftPick = index + 1;
+                    });
+                    
                     this.updateDraftBoard();
                     this.updateSummary();
                 }
@@ -312,8 +315,7 @@ class DraftBoard {
             const playerData = {
                 name: document.getElementById('playerName').value.trim(),
                 position: document.getElementById('playerPosition').value,
-                nflTeam: document.getElementById('playerNFLTeam').value.trim(),
-                draftPick: document.getElementById('draftPick').value
+                nflTeam: document.getElementById('playerNFLTeam').value.trim()
             };
             
             this.addPlayer(playerData);
@@ -343,18 +345,12 @@ class DraftBoard {
             }
         });
 
-        document.getElementById('draftPick').addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') {
-                document.getElementById('addPlayerBtn').click();
-            }
-        });
-
         // Auto-fill draft pick when clicking on cells
         document.addEventListener('click', (e) => {
             if (e.target.closest('[data-pick-number]')) {
                 const cell = e.target.closest('[data-pick-number]');
                 const pickNumber = cell.dataset.pickNumber;
-                document.getElementById('draftPick').value = pickNumber;
+                // No need to auto-fill draft pick since it's calculated automatically
             }
         });
     }
@@ -368,11 +364,11 @@ document.addEventListener('DOMContentLoaded', () => {
 // Add some sample data for demonstration (remove in production)
 function addSampleData() {
     const samplePlayers = [
-        { name: 'Christian McCaffrey', position: 'RB', nflTeam: 'SF', draftPick: 1 },
-        { name: 'Tyreek Hill', position: 'WR', nflTeam: 'MIA', draftPick: 2 },
-        { name: 'Austin Ekeler', position: 'RB', nflTeam: 'WAS', draftPick: 3 },
-        { name: 'Stefon Diggs', position: 'WR', nflTeam: 'HOU', draftPick: 4 },
-        { name: 'Saquon Barkley', position: 'RB', nflTeam: 'PHI', draftPick: 5 }
+        { name: 'Christian McCaffrey', position: 'RB', nflTeam: 'SF' },
+        { name: 'Tyreek Hill', position: 'WR', nflTeam: 'MIA' },
+        { name: 'Austin Ekeler', position: 'RB', nflTeam: 'WAS' },
+        { name: 'Stefon Diggs', position: 'WR', nflTeam: 'HOU' },
+        { name: 'Saquon Barkley', position: 'RB', nflTeam: 'PHI' }
     ];
     
     samplePlayers.forEach(player => {
